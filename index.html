@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Index</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        :root {
+            --neon: #8fd9b0;
+            --black: #3a3f45;
+            --dark: #2b2b2b;
+            --grey: #6b6b6b;
+            --light: #ececec;
+            --white: #ffffff;
+            --error: #b3261e;
+            --font: "Courier New", Courier, monospace;
+        }
+
+        body {
+            margin: 0;
+            font-family: var(--font);
+            color: var(--black);
+            background-color: var(--light);
+            background-image:
+                linear-gradient(rgba(236, 236, 236, 0.4), rgba(236, 236, 236, 0.4)),
+                url("background.jpg");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        /* Navbar: a library index card */
+        .navwrap {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 30px 33px 0 25px;
+        }
+        .topbar {
+            background-color: #fbfbf8;
+            background-image: repeating-linear-gradient(
+                transparent 0, transparent 29px, #cfe8da 29px, #cfe8da 30px
+            );
+            border: 1px solid #c9c9c9;
+            border-radius: 4px;
+            padding: 22px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            box-shadow:
+                4px 4px 0 #f4f4f1, 4px 4px 0 1px #c9c9c9,
+                8px 8px 0 #ebebe8, 8px 8px 0 1px #c9c9c9;
+        }
+        .topbar h1 {
+            margin: 0;
+            font-size: 32px;
+            letter-spacing: 1px;
+            color: var(--black);
+        }
+        .tagline {
+            margin: 8px 0 0 0;
+            color: var(--grey);
+            font-size: 15px;
+        }
+
+        /* Page content */
+        .content {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 30px 25px;
+        }
+
+        /* Search and sort controls */
+        .controls {
+            background: var(--white);
+            border: 1px solid #d0d0d0;
+            border-left: 5px solid var(--neon);
+            border-radius: 6px;
+            padding: 16px 20px;
+            margin-bottom: 22px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            align-items: flex-end;
+        }
+        label {
+            display: block;
+            font-size: 13px;
+            color: var(--grey);
+            margin-bottom: 5px;
+        }
+        input[type="text"],
+        select {
+            font-family: var(--font);
+            font-size: 15px;
+            color: var(--black);
+            padding: 9px 10px;
+            border: 2px solid var(--black);
+            border-radius: 5px;
+            background: var(--white);
+            min-width: 170px;
+            box-sizing: border-box;
+        }
+        input[type="text"]:focus-visible,
+        select:focus-visible {
+            outline: 3px solid var(--neon);
+            outline-offset: 2px;
+        }
+        .controls .search {
+            flex: 1;
+            min-width: 220px;
+        }
+        .controls .search input {
+            width: 100%;
+        }
+
+        .nomatch {
+            background: var(--white);
+            border: 1px solid #d0d0d0;
+            border-radius: 6px;
+            padding: 16px 20px;
+        }
+
+        /* Lessons grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 22px;
+        }
+        .lesson {
+            background: var(--white);
+            border: 1px solid #d0d0d0;
+            border-left: 5px solid var(--neon);
+            border-radius: 6px;
+            padding: 20px;
+        }
+        .lesson h2 {
+            margin: 0 0 14px 0;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+        }
+        .lesson h2 i,
+        .cart-row .icon {
+            background: var(--black);
+            color: var(--neon);
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            border-radius: 6px;
+            font-size: 18px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        .lesson p {
+            margin: 6px 0;
+            color: var(--grey);
+        }
+        .lesson .price {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--black);
+            margin: 12px 0;
+        }
+
+        /* White panels used on the cart page */
+        .panel {
+            background: var(--white);
+            border: 1px solid #d0d0d0;
+            border-left: 5px solid var(--neon);
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 22px;
+        }
+        .panel h2 {
+            margin: 0 0 14px 0;
+            font-size: 22px;
+        }
+
+        /* Cart rows */
+        .cart-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 0;
+            border-bottom: 1px dashed #c9c9c9;
+            flex-wrap: wrap;
+        }
+        .cart-row .info {
+            flex: 1;
+            min-width: 180px;
+        }
+        .cart-row .info strong {
+            display: block;
+            font-size: 18px;
+        }
+        .cart-row .info span {
+            color: var(--grey);
+            font-size: 14px;
+        }
+        .cart-row .amount {
+            font-weight: bold;
+            min-width: 70px;
+            text-align: right;
+        }
+        .total {
+            text-align: right;
+            font-size: 22px;
+            font-weight: bold;
+            margin-top: 14px;
+        }
+
+        /* Checkout form */
+        .fields {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            margin-bottom: 10px;
+        }
+        .field {
+            flex: 1;
+            min-width: 220px;
+        }
+        .field input {
+            width: 100%;
+        }
+        .hint {
+            color: var(--error);
+            font-size: 13px;
+            margin: 5px 0 0 0;
+            min-height: 18px;
+        }
+        .confirm {
+            font-size: 18px;
+        }
+        .confirm i {
+            color: var(--black);
+            background: var(--neon);
+            border-radius: 50%;
+            width: 34px;
+            height: 34px;
+            line-height: 34px;
+            text-align: center;
+            margin-right: 10px;
+        }
+
+        /* Buttons */
+        button {
+            font-family: var(--font);
+            background: var(--black);
+            color: var(--neon);
+            border: 2px solid var(--black);
+            padding: 10px 18px;
+            border-radius: 5px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+        button:hover {
+            background: var(--neon);
+            border-color: var(--neon);
+            color: var(--black);
+        }
+        button:disabled {
+            background: #d6d6d6;
+            border-color: #d6d6d6;
+            color: #8a8a8a;
+            cursor: not-allowed;
+        }
+        button:focus-visible {
+            outline: 3px solid var(--neon);
+            outline-offset: 2px;
+        }
+        .lesson button {
+            margin-top: 8px;
+            width: 100%;
+        }
+
+        /* Round date-stamp button in the navbar */
+        .topbar .stamp {
+            width: 100px;
+            height: 100px;
+            padding: 0;
+            border-radius: 50%;
+            background: transparent;
+            color: var(--black);
+            border: 4px double var(--black);
+            transform: rotate(-8deg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.15;
+            font-size: 14px;
+        }
+        .topbar .stamp .count {
+            font-size: 26px;
+        }
+        .topbar .stamp:hover {
+            background: var(--neon);
+            border-color: var(--black);
+            color: var(--black);
+        }
+        .topbar .stamp:disabled {
+            background: transparent;
+            border: 4px dashed #b0b5ba;
+            color: #9aa0a8;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+
+        <!-- LESSONS PAGE -->
+        <div v-if="showLessons">
+            <div class="navwrap">
+                <div class="topbar">
+                    <div>
+                        <h1>{{ message }}</h1>
+                        <p class="tagline">Your catalogue of after school classes.</p>
+                    </div>
+                    <button class="stamp" @click="toggleCart" :disabled="cartItemCount === 0">
+                        <i class="fa fa-shopping-cart"></i>
+                        <span class="count">{{ cartItemCount }}</span>
+                        <span>Cart</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="controls">
+                    <div class="search">
+                        <label for="search">Search</label>
+                        <input id="search" type="text" v-model="searchText"
+                               placeholder="Subject, location, price or spaces">
+                    </div>
+                    <div>
+                        <label for="sortBy">Sort by</label>
+                        <select id="sortBy" v-model="sortBy">
+                            <option value="topic">Subject</option>
+                            <option value="location">Location</option>
+                            <option value="price">Price</option>
+                            <option value="space">Spaces</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="sortOrder">Order</label>
+                        <select id="sortOrder" v-model="sortOrder">
+                            <option value="asc">Ascending</option>
+                            <option value="desc">Descending</option>
+                        </select>
+                    </div>
+                </div>
+
+                <p class="nomatch" v-if="visibleLessons.length === 0">
+                    No lessons match "{{ searchText }}". Clear the search box to see them all.
+                </p>
+
+                <div class="grid">
+                    <div class="lesson" v-for="lesson in visibleLessons" :key="lesson.id">
+                        <h2><i v-bind:class="lesson.icon"></i> {{ lesson.topic }}</h2>
+                        <p>Location: {{ lesson.location }}</p>
+                        <p>Spaces left: {{ lesson.space }}</p>
+                        <p class="price">&pound;{{ lesson.price }}</p>
+                        <button @click="addToCart(lesson)" v-bind:disabled="lesson.space === 0">Add to Cart</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CART PAGE -->
+        <div v-else>
+            <div class="navwrap">
+                <div class="topbar">
+                    <div>
+                        <h1>Your Cart</h1>
+                        <p class="tagline">Review the lessons you picked.</p>
+                    </div>
+                    <button class="stamp" @click="toggleCart">
+                        <i class="fa fa-arrow-left"></i>
+                        <span>Back</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="content">
+
+                <!-- After checkout -->
+                <div class="panel confirm" v-if="orderSubmitted">
+                    <p><i class="fa fa-check"></i>{{ confirmMessage }}</p>
+                    <button @click="toggleCart">Back to lessons</button>
+                </div>
+
+                <!-- Before checkout -->
+                <div v-else>
+                    <div class="panel">
+                        <h2>Lessons in your cart</h2>
+
+                        <div class="cart-row" v-for="item in cartLessons" :key="item.lesson.id">
+                            <i class="icon" v-bind:class="item.lesson.icon"></i>
+                            <div class="info">
+                                <strong>{{ item.lesson.topic }}</strong>
+                                <span>{{ item.lesson.location }} &middot; {{ item.quantity }} space(s) at &pound;{{ item.lesson.price }}</span>
+                            </div>
+                            <div class="amount">&pound;{{ item.lesson.price * item.quantity }}</div>
+                            <button @click="removeFromCart(item.lesson)">
+                                <i class="fa fa-trash"></i> Remove
+                            </button>
+                        </div>
+
+                        <p class="total">Total: &pound;{{ cartTotal }}</p>
+                    </div>
+
+                    <div class="panel">
+                        <h2>Checkout</h2>
+                        <div class="fields">
+                            <div class="field">
+                                <label for="name">Name</label>
+                                <input id="name" type="text" v-model="name" placeholder="Letters only">
+                                <p class="hint">{{ name !== '' && !isNameValid ? 'Name can only contain letters.' : '' }}</p>
+                            </div>
+                            <div class="field">
+                                <label for="phone">Phone</label>
+                                <input id="phone" type="text" v-model="phone" placeholder="Numbers only">
+                                <p class="hint">{{ phone !== '' && !isPhoneValid ? 'Phone can only contain numbers.' : '' }}</p>
+                            </div>
+                        </div>
+                        <button @click="submitOrder" :disabled="!isCheckoutValid">Checkout</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const myApp = Vue.createApp({
+            data() {
+                return {
+                    message: 'The Index',
+                    showLessons: true,
+                    cart: [],               // one lesson id per space added
+                    searchText: '',
+                    sortBy: 'topic',
+                    sortOrder: 'asc',
+                    name: '',
+                    phone: '',
+                    orderSubmitted: false,
+                    confirmMessage: '',
+                    lessons: [
+                        { id: 1, topic: 'Maths',     location: 'Hendon',        price: 100, space: 5, icon: 'fa fa-calculator' },
+                        { id: 2, topic: 'English',   location: 'Colindale',     price: 80,  space: 5, icon: 'fa fa-book' },
+                        { id: 3, topic: 'Science',   location: 'Brent Cross',   price: 90,  space: 5, icon: 'fa fa-flask' },
+                        { id: 4, topic: 'Music',     location: 'Golders Green', price: 95,  space: 5, icon: 'fa fa-music' },
+                        { id: 5, topic: 'Art',       location: 'Hendon',        price: 70,  space: 5, icon: 'fa fa-paint-brush' },
+                        { id: 6, topic: 'Football',  location: 'Colindale',     price: 60,  space: 5, icon: 'fa fa-futbol-o' },
+                        { id: 7, topic: 'Coding',    location: 'Brent Cross',   price: 120, space: 5, icon: 'fa fa-laptop' },
+                        { id: 8, topic: 'Drama',     location: 'Golders Green', price: 85,  space: 5, icon: 'fa fa-star' },
+                        { id: 9, topic: 'Chess',     location: 'Hendon',        price: 50,  space: 5, icon: 'fa fa-puzzle-piece' },
+                        { id: 10, topic: 'Swimming', location: 'Colindale',     price: 75,  space: 5, icon: 'fa fa-tint' }
+                    ]
+                }
+            },
+            computed: {
+                cartItemCount() {
+                    return this.cart.length
+                },
+                // Search first, then sort whatever is left
+                visibleLessons() {
+                    const text = this.searchText.trim().toLowerCase()
+
+                    const matches = this.lessons.filter(lesson => {
+                        if (text === '') return true
+                        return [lesson.topic, lesson.location, String(lesson.price), String(lesson.space)]
+                            .some(value => value.toLowerCase().includes(text))
+                    })
+
+                    const key = this.sortBy
+                    const direction = this.sortOrder === 'asc' ? 1 : -1
+
+                    return matches.sort((a, b) => {
+                        if (typeof a[key] === 'number') {
+                            return (a[key] - b[key]) * direction
+                        }
+                        return a[key].localeCompare(b[key]) * direction
+                    })
+                },
+                // Turns the list of ids into one row per lesson with a quantity
+                cartLessons() {
+                    const rows = []
+                    this.lessons.forEach(lesson => {
+                        const quantity = this.cart.filter(id => id === lesson.id).length
+                        if (quantity > 0) {
+                            rows.push({ lesson: lesson, quantity: quantity })
+                        }
+                    })
+                    return rows
+                },
+                cartTotal() {
+                    return this.cartLessons.reduce((sum, item) => sum + item.lesson.price * item.quantity, 0)
+                },
+                // Name: letters (and spaces between words) only
+                isNameValid() {
+                    return /^[A-Za-z ]+$/.test(this.name) && this.name.trim() !== ''
+                },
+                // Phone: digits only
+                isPhoneValid() {
+                    return /^[0-9]+$/.test(this.phone)
+                },
+                isCheckoutValid() {
+                    return this.isNameValid && this.isPhoneValid
+                }
+            },
+            methods: {
+                addToCart(lesson) {
+                    if (lesson.space > 0) {
+                        this.cart.push(lesson.id)
+                        lesson.space--
+                    }
+                },
+                // Removes one space and gives it back to the lesson
+                removeFromCart(lesson) {
+                    const index = this.cart.indexOf(lesson.id)
+                    if (index !== -1) {
+                        this.cart.splice(index, 1)
+                        lesson.space++
+                    }
+                    // Nothing left in the cart, so go back to the lessons page
+                    if (this.cart.length === 0) {
+                        this.showLessons = true
+                    }
+                },
+                submitOrder() {
+                    if (!this.isCheckoutValid) return
+                    this.confirmMessage = 'Thank you, ' + this.name.trim() + '! Your order has been submitted.'
+                    this.cart = []
+                    this.name = ''
+                    this.phone = ''
+                    this.orderSubmitted = true
+                },
+                toggleCart() {
+                    this.showLessons = !this.showLessons
+                    if (this.showLessons) {
+                        this.orderSubmitted = false
+                    }
+                }
+            }
+        })
+        myApp.mount('#app')
+    </script>
+</body>
+</html>
